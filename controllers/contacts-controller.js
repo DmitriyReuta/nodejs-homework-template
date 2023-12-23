@@ -1,74 +1,74 @@
-import * as contactService from "../models/contacts/index.js";
+import Contact from "../models/Contacts.js";
+
+// import * as contactService from "../models/contacts/index.js";
 
 import { HttpError } from "../helpers/index.js";
+import { ctrlWrapper } from "../decorators/index.js";
+// import { contactAddSchema, contactUpdateSchema } from "../schemas/contact-schemas.js";
 
-import { contactAddSchema, contactUpdateSchema } from "../schemas/contact-schemas.js";
+const getAll = async (req, res) => {
+    const result = await Contact.find({}, "-createdAt -updatedAt");
 
-const getAll = async (req, res, next) => {
-    try {
-        const result = await contactService.listContacts();
-
-        res.json(result);
-    }
-    catch (error) {
-        next(error);
-    }
+    res.json(result);
 }
 
-const getById = async (req, res, next) => {
-    try {
+const getById = async (req, res) => {
         const { id } = req.params;
-        const result = await contactService.getContactById(id);
+        const result = await Contact.findById(id);
         if (!result) {
             throw HttpError(404, `Not found`);
         }
 
         res.json(result);
-    }
-    catch (error) {
-        next(error);
-    }
 }
 
-const add = async (req, res, next) => {
-    try {
-        const { error } = contactAddSchema.validate(req.body);
-        if (error) {
-            throw HttpError(400, error);
-        }
-         const { name, email, phone } = req.body;
+const add = async (req, res) => {
+   const result = await Contact.create(req.body);
 
-        const result = await contactService.addContact(name, email, phone);
-        res.status(201).json(result)
-    }
-    catch (error) {
-        next(error);
-    }
+    res.status(201).json(result)
 }
 
-const updateById = async (req, res, next) => {
-    try {
-        const { error } = contactUpdateSchema.validate(req.body);
-        if (error) {
-            throw HttpError(400, error);
-        }
+const updateById = async (req, res) => {
+    
         const { id } = req.params;
-        const result = await contactService.updateContactById(id, req.body);
+        const result = await Contact.findByIdAndUpdate(id, req.body);
         if (!result) {
             throw HttpError(404, `Not found`);
         }
 
         res.json(result);
-    }
-    catch (error) {
-        next(error);
-    }
 }
 
-const deleteById = async (req, res, next) => {
+const updateStatusContact = async (id, body) => {
+     try {
+        const contact = await Contact.findByIdAndUpdate(id, { favorite: body.favorite });
+
+        if (!contact) {
+            throw HttpError(404, "Not found");
+    }
+         return contact;
+         
+    } catch (error) {
+        throw HttpError(400, "Missing field favorite");
+    }
+};
+
+const updateFavoriteById = async (req, res) => {
+    const { id } = req.params;
     try {
+        const result = await updateStatusContact(id, req.body);
+
+        res.json(result);
+    } catch (error) {
+            res.status(500).json({ message: "Internal Server Error" });
+        
+    }
+};
+
+const deleteById = async (req, res) => {
+
         const { id } = req.params;
-        const result = await contactService.removeContact(id);
+        const result = await Contact.findByIdAndDelete(id);
         if (!result) {
             throw HttpError(404, `Not found`);
         }
@@ -76,16 +76,13 @@ const deleteById = async (req, res, next) => {
         res.json({
             message: "contact deleted"
         })
-    }
-    catch (error) {
-        next(error);
-    }
 }
 
 export default {
-    getAll,
-    getById,
-    add,
-    updateById,
-    deleteById,
+   getAll: ctrlWrapper(getAll),
+    getById: ctrlWrapper(getById),
+    add: ctrlWrapper(add),
+    updateById: ctrlWrapper(updateById),
+    updateFavoriteById: ctrlWrapper(updateFavoriteById),
+    deleteById: ctrlWrapper(deleteById),
 }
