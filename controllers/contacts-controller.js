@@ -4,7 +4,7 @@ import Contact from "../models/Contacts.js";
 
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorators/index.js";
-// import { contactAddSchema, contactUpdateSchema } from "../schemas/contact-schemas.js";
+import { contactUpdateSchema } from "../schemas/contact-schemas.js";
 
 const getAll = async (req, res) => {
     const result = await Contact.find({}, "-createdAt -updatedAt");
@@ -40,16 +40,20 @@ const updateById = async (req, res) => {
 }
 
 const updateStatusContact = async (id, body) => {
-     try {
+    try{
+     const { error } = contactUpdateSchema.validate(req.body);
+        if (error) {
+            throw HttpError(400, "missing field favorite");
+        }
         const contact = await Contact.findByIdAndUpdate(id, { favorite: body.favorite });
 
         if (!contact) {
-            throw HttpError(404, "Not found");
-    }
-         return contact;
-         
+            throw new HttpError(404, "Not found");
+        }
+
+        return contact;
     } catch (error) {
-        throw HttpError(400, "Missing field favorite");
+        throw error;
     }
 };
 
