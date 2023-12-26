@@ -31,10 +31,14 @@ contactSchema.post("findOneAndUpdate", handleSaveError);
 
 export const contactAddSchema = Joi.object({
     name: Joi.string().required().messages({
-        "any.required": `"name" must be exist`
+        "any.required": `name must be exist`
     }),
-    email: Joi.string().required(),
-    phone: Joi.string().required(),
+    email: Joi.string().required().messages({
+        "any.required": `missing required email field`
+    }),
+    phone: Joi.string().required().messages({
+        "any.required": `missing required phone field`
+    }),
     favorite: Joi.boolean(),
 })
 

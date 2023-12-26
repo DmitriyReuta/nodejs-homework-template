@@ -22,11 +22,24 @@ const getById = async (req, res) => {
         res.json(result);
 }
 
-const add = async (req, res) => {
-   const result = await Contact.create(req.body);
 
-    res.status(201).json(result)
+const add = async (req, res) => {
+     try {
+        const { error } = contactAddSchema.validate(req.body);
+        if (error) {
+            throw HttpError(400, error.message);
+        }
+       const { name, email, phone } = req.body;
+   const result = await Contact.create(name, email, phone);
+
+         res.status(201).json(result)
+          }
+    catch (error) {
+        next(error);
+    }
 }
+
+
 
 const updateById = async (req, res) => {
     
@@ -40,15 +53,16 @@ const updateById = async (req, res) => {
 }
 
 const updateStatusContact = async (id, body) => {
-    try{
-     const { error } = contactUpdateSchema.validate(req.body);
+    try {
+        const { error } = contactUpdateSchema.validate(body);
         if (error) {
             throw HttpError(400, "missing field favorite");
         }
+
         const contact = await Contact.findByIdAndUpdate(id, { favorite: body.favorite });
 
         if (!contact) {
-            throw new HttpError(404, "Not found");
+            throw HttpError(404, "Not found");
         }
 
         return contact;
@@ -58,14 +72,18 @@ const updateStatusContact = async (id, body) => {
 };
 
 const updateFavoriteById = async (req, res) => {
-    const { id } = req.params;
-    try {
+     try {
+        const { id } = req.params;
         const result = await updateStatusContact(id, req.body);
-
         res.json(result);
     } catch (error) {
+        if (error.statusCode === 400) {
+            res.status(400).json({ message: "missing field favorite" });
+        } else if (error.statusCode === 404) {
+            res.status(404).json({ message: "Not found" });
+        } else {
             res.status(500).json({ message: "Internal Server Error" });
-        
+        }
     }
 };
 
