@@ -1,7 +1,6 @@
 import Contact from "../models/Contacts.js";
 
 // import * as contactService from "../models/contacts/index.js";
-
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorators/index.js";
 import { contactUpdateSchema } from "../schemas/contact-schemas.js";
@@ -23,22 +22,11 @@ const getById = async (req, res) => {
 }
 
 
+
 const add = async (req, res) => {
-     try {
-        const { error } = contactAddSchema.validate(req.body);
-        if (error) {
-            throw HttpError(400, error.message);
-        }
-       const { name, email, phone } = req.body;
-   const result = await Contact.create(name, email, phone);
-
-         res.status(201).json(result)
-          }
-    catch (error) {
-        next(error);
-    }
-}
-
+  const result = await Contact.create(req.body);
+  res.status(201).json(result);
+};
 
 
 const updateById = async (req, res) => {
@@ -67,20 +55,24 @@ const updateStatusContact = async (id, body) => {
 
         return contact;
     } catch (error) {
-        throw error;
+        throw new Error(error.message);
     }
 };
 
 const updateFavoriteById = async (req, res) => {
-     try {
+    try {
         const { id } = req.params;
         const result = await updateStatusContact(id, req.body);
+
+        if (!result) {
+            res.status(404).json({ message: "Not found" });
+            return;
+        }
+
         res.json(result);
     } catch (error) {
-        if (error.statusCode === 400) {
+          if (error.status === 400) {
             res.status(400).json({ message: "missing field favorite" });
-        } else if (error.statusCode === 404) {
-            res.status(404).json({ message: "Not found" });
         } else {
             res.status(500).json({ message: "Internal Server Error" });
         }
