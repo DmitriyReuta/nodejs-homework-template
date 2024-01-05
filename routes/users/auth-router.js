@@ -10,12 +10,12 @@ import { userRegisterSchema, userLoginSchema } from "../../models/User.js";
 
 const authRouter = express.Router();
 
-authRouter.post("/users/register", isEmptyBody, validateBody(userRegisterSchema), authController.register);
+authRouter.post("/register", isEmptyBody, validateBody(userRegisterSchema), authController.register);
 
-authRouter.post("/users/login", isEmptyBody, validateBody(userLoginSchema), authController.login);
+authRouter.post("/login", isEmptyBody, validateBody(userLoginSchema), authController.login);
 
-authRouter.get("/users/current", authenticate, authController.getCurrent);
+authRouter.get("/current", authenticate, authController.getCurrent);
 
-authRouter.post("/users/logout", authenticate, authController.logout);
+authRouter.post("/logout", authenticate, authController.logout);
 
 export default authRouter;
