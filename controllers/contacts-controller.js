@@ -57,7 +57,7 @@ const updateStatusContact = async (id, body) => {
             throw HttpError(400, "missing field favorite");
         }
 
-        const contact = await Contact.findByIdAndUpdate(id, { favorite: body.favorite });
+        const contact = await Contact.findOneAndUpdate(id, { favorite: body.favorite });
 
         if (!contact) {
             throw HttpError(404, "Not found");
