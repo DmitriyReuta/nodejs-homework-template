@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     filename: (req, file, callback) => {
         // const uniquePreffix = nanoid()
         // const fileName = `${uniquePreffix}_${file.originalname}`;
-        callback(null, originalname)
+        callback(null, file.originalname)
     }
 })
 
