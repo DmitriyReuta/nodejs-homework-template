@@ -1,9 +1,9 @@
 import {Schema, model} from "mongoose";
 import Joi from "joi";
-
 import {handleSaveError, addUpdateSettings} from "./contacts/hooks.js";
 
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+
 
 const userSchema = new Schema({
   password: {
@@ -20,7 +20,11 @@ const userSchema = new Schema({
     enum: ["starter", "pro", "business"],
     default: "starter"
   },
-  token: String
+  token: String,
+   avatarURL: {
+      type: String,
+      required: true,
+    },
 }, {versionKey: false, timestamps: true});
 
 userSchema.post("save", handleSaveError);
@@ -28,6 +32,7 @@ userSchema.post("save", handleSaveError);
 userSchema.pre("findOneAndUpdate", addUpdateSettings);
 
 userSchema.post("findOneAndUpdate", handleSaveError);
+
 
 export const userRegisterSchema = Joi.object({
     email: Joi.string().pattern(emailRegexp).required(),
